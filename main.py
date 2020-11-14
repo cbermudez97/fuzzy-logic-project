@@ -1,5 +1,5 @@
 from fuzzy_logic.sets import FSet
-from fuzzy_logic.inference import IsStatementAntecedent as IsStmnt, MamdaniRule, MamdaniMethod
+from fuzzy_logic.inference import IsStatementAntecedent as IsStmnt, MamdaniRule, MamdaniMethod, LarsenRule, LarsenMethod
 from fuzzy_logic.variables import Variable
 from fuzzy_logic.sets.functions import build_gaussian_function, build_s_function, build_z_function, build_ganma_function, build_l_function, build_pi_function, build_triangular_function
 from fuzzy_logic.sets.defuzzification import centroid_defuzzification, bisection_defuzzification, min_maxium_defuzzification, med_maxium_defuzzification, max_maxium_defuzzification
@@ -26,21 +26,32 @@ tip_var = Variable('tip', tip_poor_set, tip_average_set, tip_generous_set)
 # tip_var.graph(end_des=2)
 
 antecedent1 = IsStmnt(service_var, 'bad') | IsStmnt(food_var, 'raw')
-rule1 = MamdaniRule(antecedent1, [tip_var], ['poor'])
+mrule1 = MamdaniRule(antecedent1, [tip_var], ['poor'])
+lrule1 = LarsenRule(antecedent1, [tip_var], ['poor'])
 
 antecedent2 = IsStmnt(service_var, 'good')
-rule2 = MamdaniRule(antecedent2, [tip_var], ['average'])
+mrule2 = MamdaniRule(antecedent2, [tip_var], ['average'])
+lrule2 = LarsenRule(antecedent2, [tip_var], ['average'])
 
 antecedent3 = IsStmnt(service_var, 'exelent') | IsStmnt(food_var, 'delicious')
-rule3 = MamdaniRule(antecedent3, [tip_var], ['rich'])
+mrule3 = MamdaniRule(antecedent3, [tip_var], ['rich'])
+lrule3 = LarsenRule(antecedent3, [tip_var], ['rich'])
 
 food_val = float(inputUntil('Input food calification:', lambda x: isFloatIn(x, m=0, M=10)))
 service_val = float(inputUntil('Input service calification:', lambda x: isFloatIn(x, m=0, M=10)))
 
-mamdani = MamdaniMethod([rule1, rule2, rule3])
-ptip = mamdani.infer({
+mamdani = MamdaniMethod([mrule1, mrule2, mrule3])
+larsen = LarsenMethod([lrule1, lrule2, lrule3])
+
+mptip = mamdani.infer({
             'food': food_val,
             'service': service_val,
             })
 
-print(f'Tip: {ptip}')
+lptip = larsen.infer({
+            'food': food_val,
+            'service': service_val,
+            })
+
+print(f'Tip using Mamdani: {mptip}')
+print(f'Tip using Larsen: {lptip}')
