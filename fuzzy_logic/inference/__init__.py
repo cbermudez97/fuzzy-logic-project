@@ -1,0 +1,1 @@
+from .antecedent import IsStatementAntecedent
