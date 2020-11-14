@@ -1,0 +1,3 @@
+from .bisection import bisection_defuzzification
+from .centroid import centroid_defuzzification
+from .maxium import min_maxium_defuzzification, med_maxium_defuzzification, max_maxium_defuzzification
