@@ -1,6 +1,7 @@
 from .rules import Rule
 from .antecedent import Antecedent
 from ..sets import FSet
+from ..sets.functions.func_class import MembershipFunc
 from ..sets.defuzzification import centroid_defuzzification, bisection_defuzzification, min_maxium_defuzzification, med_maxium_defuzzification, max_maxium_defuzzification
 from ..variables import Variable
 
@@ -16,7 +17,8 @@ class MamdaniRule(Rule):
         cuted = dict()
         for con_var, con_desc in zip(self.con_vars, self.con_descs):
             to_cut:FSet = con_var.descriptors[con_desc]
-            fset = FSet(f'cuted_{to_cut.name}', lambda x: min(result, to_cut.membership(x)), union_method=to_cut.umethod, intersec_method=to_cut.imethod)
+            func = MembershipFunc(to_cut.membership.ipoints, lambda x: min(result, to_cut.membership(x)))
+            fset = FSet(f'cuted_{to_cut.name}', func, union_method=to_cut.umethod, intersec_method=to_cut.imethod)
             cuted[con_var.name] = fset
         return cuted
 
@@ -36,4 +38,3 @@ class MamdaniMethod:
 
         return final
         
-

@@ -21,4 +21,5 @@ class Variable:
             y_data = [ desc.membership(x) for x in x_data ]
             plots.append(plt.plot(x_data, y_data, f'C{it+1}', label=desc.name))
         plt.legend()
+        plt.title(self.name)
         plt.show()
