@@ -13,7 +13,7 @@ class Antecedent:
     def __or__(self, other):
         return OrAntecedent(self, other, norm=self.norm, conorm=self.conorm)
 
-    def eval(self, x):
+    def eval(self, values:dict):
         raise NotImplementedError()
 
 class BinaryAntecedent(Antecedent):
@@ -23,12 +23,12 @@ class BinaryAntecedent(Antecedent):
         self.right = right
 
 class AndAntecedent(BinaryAntecedent):
-    def eval(self, x):
-        return self.norm(self.left.eval(x), self.right.eval(x))
+    def eval(self, values:dict):
+        return self.norm(self.left.eval(values), self.right.eval(values))
 
 class OrAntecedent(BinaryAntecedent):
-    def eval(self, x):
-        return self.conorm(self.left.eval(x), self.right.eval(x))
+    def eval(self, values:dict):
+        return self.conorm(self.left.eval(values), self.right.eval(values))
 
 class IsStatementAntecedent(Antecedent):
     def __init__(self, var:Variable, descriptor:str, norm=IMIN, conorm=UMAX):
@@ -36,5 +36,5 @@ class IsStatementAntecedent(Antecedent):
         self.var = var
         self.desc = descriptor
 
-    def eval(self, x):
-        return self.var.fuzzify(x, self.desc)
+    def eval(self, values:dict):
+        return self.var.fuzzify(values[self.var.name], self.desc)
