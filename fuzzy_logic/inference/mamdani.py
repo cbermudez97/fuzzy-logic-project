@@ -1,4 +1,5 @@
 from .rules import Rule
+from .defuzzy_model import Defuzzy_Model, Defuzzy_Rule
 from .antecedent import Antecedent
 from ..sets import FSet
 from ..sets.functions.func_class import MembershipFunc
@@ -6,35 +7,11 @@ from ..sets.defuzzification import centroid_defuzzification, bisection_defuzzifi
 from ..variables import Variable
 
 
-class MamdaniRule(Rule):
-    def __init__(self, antecedent:Antecedent, con_var:list, con_desc:list):
-        super(MamdaniRule, self).__init__(antecedent)
-        self.con_vars = con_var
-        self.con_descs = con_desc
+class MamdaniRule(Defuzzy_Rule):
+    def merge(self, value, to_cut:FSet):
+        func = MembershipFunc(to_cut.membership.ipoints, lambda x: min(value, to_cut.membership(x)))
+        return FSet(f'cuted_{to_cut.name}', func, union_method=to_cut.umethod, intersec_method=to_cut.imethod)
 
-    def eval(self, values:dict):
-        result = self.antecedent.eval(values)
-        cuted = dict()
-        for con_var, con_desc in zip(self.con_vars, self.con_descs):
-            to_cut:FSet = con_var.descriptors[con_desc]
-            func = MembershipFunc(to_cut.membership.ipoints, lambda x: min(result, to_cut.membership(x)))
-            fset = FSet(f'cuted_{to_cut.name}', func, union_method=to_cut.umethod, intersec_method=to_cut.imethod)
-            cuted[con_var.name] = fset
-        return cuted
-
-class MamdaniMethod:
-    def __init__(self, rules:list):
-        self.rules = rules
-
-    def infer(self, input_values:dict, def_method=centroid_defuzzification):
-        final = self.rules[0].eval(input_values)
-        for rule in self.rules[1:]:
-            update = rule.eval(input_values)
-            for var_name in update:
-                final[var_name] = final[var_name] + update[var_name]
-        
-        for var_name in final:
-            final[var_name] = def_method(final[var_name])
-
-        return final
+class MamdaniMethod(Defuzzy_Model):
+    pass
         
