@@ -27,7 +27,7 @@ class FSet:
         memb = MembershipFunc( self.membership.ipoints + other.membership.ipoints, lambda x: self.imethod(self.membership(x), other.membership(x)))
         return FSet(f'inter_({self.name})_({other.name})', memb, union_method=self.umethod, intersec_method=self.imethod)
 
-    def get_domain_sample(self, start_des=-5,end_des=5, step=0.05):
+    def get_domain_sample(self, start_des=0,end_des=0, step=0.05):
         domain_sample = list(arange( self.membership.ipoints[0] - start_des, self.membership.ipoints[-1] + end_des, step)) + self.membership.ipoints
         domain_sample.sort()
         return domain_sample

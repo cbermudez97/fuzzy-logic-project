@@ -6,52 +6,81 @@ from fuzzy_logic.sets.defuzzification import centroid_defuzzification, bisection
 
 from fuzzy_logic.utils import inputUntil, isFloatIn
 
-service_bad_set = FSet('bad', build_z_function(1, 4))
-service_good_set = FSet('good', build_gaussian_function(5, 2))
-service_exelent_set = FSet('exelent', build_s_function(6, 9))
+# Temperature variable measured in Farenheits
+temperature_cold_set = FSet('cold', build_l_function(32, 43))
+temperature_cool_set = FSet('cool', build_triangular_function(38, 55, 67))
+temperature_hot_set = FSet('hot', build_ganma_function(64, 77))
+temperature_var = Variable('temperature', temperature_cold_set, temperature_cool_set, temperature_hot_set)
 
-food_raw_set = FSet('raw', build_z_function(3, 7))
-food_delicious_set = FSet('delicious', build_s_function(5, 9))
+# Pressure variable measured in hPa
+pressure_low_set = FSet('low', build_l_function(980, 1015))
+pressure_high_set = FSet('high', build_ganma_function(995, 1040))
+pressure_var = Variable('pressure', pressure_low_set, pressure_high_set)
 
-tip_poor_set = FSet('poor', build_l_function(4, 10))
-tip_average_set = FSet('average', build_triangular_function(8, 15, 18))
-tip_generous_set = FSet('rich', build_ganma_function(15, 23))
+# Humidity variable, this is the percent of water in the air from the total it can hold in that moment
+humidity_low_set = FSet('low', build_l_function(40, 60))
+humidity_average_set = FSet('average', build_triangular_function(55, 70, 85))
+humidity_high_set = FSet('high', build_ganma_function(80, 95))
+humidity_var = Variable('humidity', humidity_low_set, humidity_average_set, humidity_high_set)
 
-service_var = Variable('service', service_bad_set, service_good_set, service_exelent_set)
-food_var = Variable('food', food_raw_set, food_delicious_set)
-tip_var = Variable('tip', tip_poor_set, tip_average_set, tip_generous_set)
+# Sea Level variable measured in meters(m), this refers to the actual difference of the average sea level with the actual sea level in that moment
+sea_level_normal_set = FSet('normal', build_l_function(0, 1.5))
+sea_level_medium_set = FSet('medium', build_triangular_function(1, 1.9, 2.5))
+sea_level_high_set = FSet('high', build_ganma_function(2.3, 3))
+sea_level_var = Variable('sea_level', sea_level_normal_set, sea_level_medium_set, sea_level_high_set)
 
-service_var.graph(end_des=1)
-food_var.graph(end_des=1)
-tip_var.graph(end_des=2)
+# Flood Control Dam operation variable, this value does not have a real signification it only gives a quantifier to the operation to use
+operation_open_set = FSet('open', build_l_function(0, 1))
+operation_close_set = FSet('close', build_ganma_function(1, 2))
+operation_var = Variable('operation', operation_open_set, operation_close_set)
 
-antecedent1 = IsStmnt(service_var, 'bad') | IsStmnt(food_var, 'raw')
-mrule1 = MamdaniRule(antecedent1, [tip_var], ['poor'])
-lrule1 = LarsenRule(antecedent1, [tip_var], ['poor'])
+# temperature_var.graph()
+# pressure_var.graph()
+# humidity_var.graph()
+# sea_level_var.graph()
+# operation_var.graph()
 
-antecedent2 = IsStmnt(service_var, 'good')
-mrule2 = MamdaniRule(antecedent2, [tip_var], ['average'])
-lrule2 = LarsenRule(antecedent2, [tip_var], ['average'])
+antecedent1 = IsStmnt(sea_level_var, 'normal')
+mrule1 = MamdaniRule(antecedent1, [operation_var], ['open'])
+lrule1 = LarsenRule(antecedent1, [operation_var], ['open'])
 
-antecedent3 = IsStmnt(service_var, 'exelent') | IsStmnt(food_var, 'delicious')
-mrule3 = MamdaniRule(antecedent3, [tip_var], ['rich'])
-lrule3 = LarsenRule(antecedent3, [tip_var], ['rich'])
+antecedent2 = IsStmnt(sea_level_var, 'high')
+mrule2 = MamdaniRule(antecedent2, [operation_var], ['close'])
+lrule2 = LarsenRule(antecedent2, [operation_var], ['close'])
 
-food_val = float(inputUntil('Input food calification:', lambda x: isFloatIn(x, m=0, M=10)))
-service_val = float(inputUntil('Input service calification:', lambda x: isFloatIn(x, m=0, M=10)))
+antecedent3 = IsStmnt(humidity_var, 'high') & IsStmnt(temperature_var, 'hot') & IsStmnt(pressure_var, 'low') 
+mrule3 = MamdaniRule(antecedent3, [operation_var], ['close'])
+lrule3 = LarsenRule(antecedent3, [operation_var], ['close'])
 
-mamdani = MamdaniMethod([mrule1, mrule2, mrule3])
-larsen = LarsenMethod([lrule1, lrule2, lrule3])
+antecedent4 = (IsStmnt(humidity_var, 'average') | IsStmnt(humidity_var, 'low')) & IsStmnt(temperature_var, 'hot') & IsStmnt(pressure_var, 'low') & IsStmnt(sea_level_var, 'normal')
+mrule4 = MamdaniRule(antecedent4, [operation_var], ['open'])
+lrule4 = LarsenRule(antecedent4, [operation_var], ['open'])
 
-mptip = mamdani.infer({
-            'food': food_val,
-            'service': service_val,
-            })
+antecedent5 = (IsStmnt(temperature_var, 'hot') | IsStmnt(pressure_var, 'high') | IsStmnt(humidity_var, 'average')) & IsStmnt(sea_level_var, 'medium')
+mrule5 = MamdaniRule(antecedent5, [operation_var], ['open'])
+lrule5 = LarsenRule(antecedent5, [operation_var], ['open'])
 
-lptip = larsen.infer({
-            'food': food_val,
-            'service': service_val,
-            })
+temperature_val = float(inputUntil('Input temperature value (F):', lambda x: isFloatIn(x, m=0, M=100)))
+pressure_val = float(inputUntil('Input pressure value (hPa):', lambda x: isFloatIn(x, m=800, M=1100)))
+humidity_val = float(inputUntil('Input humidity percent (%100):', lambda x: isFloatIn(x, m=0, M=100)))
+sea_level_val = float(inputUntil('Input sea level difference (m):', lambda x: isFloatIn(x, m=0, M=5)))
 
-print(f'Tip using Mamdani: {mptip}')
-print(f'Tip using Larsen: {lptip}')
+mamdani = MamdaniMethod([mrule1, mrule2, mrule3, mrule4, mrule5])
+larsen = LarsenMethod([lrule1, lrule2, lrule3, lrule4, lrule5])
+
+m_op = mamdani.infer({
+            'temperature': temperature_val,
+            'pressure': pressure_val,
+            'humidity': humidity_val,
+            'sea_level': sea_level_val,
+            })['operation']
+
+l_op = larsen.infer({
+            'temperature': temperature_val,
+            'pressure': pressure_val,
+            'humidity': humidity_val,
+            'sea_level': sea_level_val,
+            })['operation']
+
+print(f'The dam will { "open" if m_op < 1 else "close"}.(using Mamdani)')
+print(f'The dam will { "open" if l_op < 1 else "close"}.(using Larsen)')
