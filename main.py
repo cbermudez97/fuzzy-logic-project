@@ -21,9 +21,9 @@ service_var = Variable('service', service_bad_set, service_good_set, service_exe
 food_var = Variable('food', food_raw_set, food_delicious_set)
 tip_var = Variable('tip', tip_poor_set, tip_average_set, tip_generous_set)
 
-# service_var.graph(end_des=1)
-# food_var.graph(end_des=1)
-# tip_var.graph(end_des=2)
+service_var.graph(end_des=1)
+food_var.graph(end_des=1)
+tip_var.graph(end_des=2)
 
 antecedent1 = IsStmnt(service_var, 'bad') | IsStmnt(food_var, 'raw')
 mrule1 = MamdaniRule(antecedent1, [tip_var], ['poor'])
